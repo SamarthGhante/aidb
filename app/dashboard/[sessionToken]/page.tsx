@@ -2,12 +2,15 @@
 import { useParams } from "next/navigation";
 import { BackgroundLines } from "@/components/ui/background-lines";
 import { FileUploadModal } from "@/components/ui/file-upload-modal";
+import { ChatInterface } from "@/components/ui/chat-interface";
 import { useState } from "react";
 
 export default function DashboardPage() {
   const params = useParams();
   const sessionToken = params.sessionToken as string;
   const [showUploadModal, setShowUploadModal] = useState(true);
+  const [uploadedFile, setUploadedFile] = useState<string | null>(null);
+  const [fileCount, setFileCount] = useState(0);
 
   return (
     <BackgroundLines className="min-h-screen bg-black font-mono" svgOptions={{ duration: 8 }}>
@@ -27,12 +30,24 @@ export default function DashboardPage() {
         </div>
 
         {/* Main Dashboard Content */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2">
-            <div className="bg-black/50 border border-neutral-700 rounded-lg p-6">
-              <h2 className="text-xl font-bold text-white font-mono mb-4">Database Chat</h2>
-              <p className="text-neutral-400 font-mono">Upload a SQL file to start chatting with your database.</p>
-            </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)]">
+          <div className="lg:col-span-2 flex flex-col">
+            {uploadedFile ? (
+              <ChatInterface sessionToken={sessionToken} fileName={uploadedFile} />
+            ) : (
+              <div className="bg-black/50 border border-neutral-700 rounded-lg p-6 flex-1 flex items-center justify-center">
+                <div className="text-center">
+                  <h2 className="text-xl font-bold text-white font-mono mb-4">Database Chat</h2>
+                  <p className="text-neutral-400 font-mono mb-6">Upload a SQL file to start chatting with your database.</p>
+                  <button 
+                    onClick={() => setShowUploadModal(true)}
+                    className="px-6 py-3 bg-white text-black rounded-lg font-mono font-medium hover:bg-neutral-200 transition-colors duration-200"
+                  >
+                    Upload SQL File
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
           
           <div className="space-y-6">
@@ -40,10 +55,33 @@ export default function DashboardPage() {
               <h3 className="text-lg font-bold text-white font-mono mb-4">Session Info</h3>
               <div className="space-y-2 text-sm font-mono">
                 <p className="text-neutral-400">Status: <span className="text-green-400">Active</span></p>
-                <p className="text-neutral-400">Files: <span className="text-white">0</span></p>
-                <p className="text-neutral-400">Queries: <span className="text-white">0</span></p>
+                <p className="text-neutral-400">Files: <span className="text-white">{fileCount}</span></p>
+                <p className="text-neutral-400">Database: <span className="text-cyan-400">{uploadedFile || 'None'}</span></p>
               </div>
             </div>
+
+            {uploadedFile && (
+              <div className="bg-black/50 border border-neutral-700 rounded-lg p-6">
+                <h3 className="text-lg font-bold text-white font-mono mb-4">Quick Actions</h3>
+                <div className="space-y-3">
+                  <button 
+                    onClick={() => setShowUploadModal(true)}
+                    className="w-full px-4 py-2 bg-neutral-800 text-white rounded-lg font-mono text-sm hover:bg-neutral-700 transition-colors duration-200"
+                  >
+                    Upload New File
+                  </button>
+                  <button 
+                    onClick={() => {
+                      setUploadedFile(null);
+                      setFileCount(0);
+                    }}
+                    className="w-full px-4 py-2 border border-red-500 text-red-400 rounded-lg font-mono text-sm hover:bg-red-500/10 transition-colors duration-200"
+                  >
+                    Clear Session
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -52,9 +90,10 @@ export default function DashboardPage() {
           <FileUploadModal 
             sessionToken={sessionToken}
             onClose={() => setShowUploadModal(false)}
-            onUploadSuccess={() => {
+            onUploadSuccess={(fileName: string) => {
               setShowUploadModal(false);
-              // Refresh dashboard or update state
+              setUploadedFile(fileName);
+              setFileCount(prev => prev + 1);
             }}
           />
         )}

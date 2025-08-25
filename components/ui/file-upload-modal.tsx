@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from "motion/react";
 interface FileUploadModalProps {
   sessionToken: string;
   onClose: () => void;
-  onUploadSuccess: () => void;
+  onUploadSuccess: (fileName: string) => void;
 }
 
 export function FileUploadModal({ sessionToken, onClose, onUploadSuccess }: FileUploadModalProps) {
@@ -70,7 +70,8 @@ export function FileUploadModal({ sessionToken, onClose, onUploadSuccess }: File
         throw new Error('Upload failed');
       }
 
-      onUploadSuccess();
+      const result = await response.json();
+      onUploadSuccess(result.fileName);
     } catch (err) {
       setError('Failed to upload file. Please try again.');
     } finally {
