@@ -1,8 +1,17 @@
+"use client";
 import { TextHoverEffect } from "@/components/ui/text-hover-effect";
 import { BackgroundLines } from "@/components/ui/background-lines";
 import { TextGenerateEffect } from "@/components/ui/text-generate-effect";
+import { useRouter } from "next/navigation";
+import { generateSessionToken } from "@/lib/utils";
 
 export default function Home() {
+  const router = useRouter();
+
+  const handleDashboardClick = () => {
+    const sessionToken = generateSessionToken();
+    router.push(`/dashboard/${sessionToken}`);
+  };
   return (
     <BackgroundLines className="min-h-screen bg-black font-mono" svgOptions={{ duration: 8 }}>
       {/* Content */}
@@ -23,7 +32,10 @@ export default function Home() {
         </div>
 
         {/* Perfect Dashboard Button with Animation */}
-        <button className="group relative px-8 py-3 rounded-full border border-white bg-white text-black font-mono font-medium text-lg overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-white/30 hover:-translate-y-1 mt-6">
+        <button 
+          onClick={handleDashboardClick}
+          className="group relative px-8 py-3 rounded-full border border-white bg-white text-black font-mono font-medium text-lg overflow-hidden transition-all duration-300 ease-out hover:shadow-lg hover:shadow-white/30 hover:-translate-y-1 mt-6"
+        >
           <span className="relative z-10 flex items-center gap-2 transition-transform duration-300 group-hover:-translate-y-0.5">
             <span className="transition-transform duration-300 group-hover:-translate-y-0.5">Dashboard</span>
             <svg className="w-5 h-5 transition-all duration-300 group-hover:translate-x-2 group-hover:-translate-y-0.5 group-hover:scale-110" fill="none" stroke="currentColor" viewBox="0 0 24 24">
