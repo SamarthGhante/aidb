@@ -2,6 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { writeFile, mkdir } from 'fs/promises';
 import { join } from 'path';
 import { existsSync } from 'fs';
+import { extractDatabaseSchema } from '@/lib/schema-extractor';
+import { initializeDatabase } from '@/lib/sql-executor';
 
 export async function POST(request: NextRequest) {
   try {
@@ -42,11 +44,18 @@ export async function POST(request: NextRequest) {
     const filePath = join(sessionDir, file.name);
     await writeFile(filePath, buffer);
 
+    // Extract database schema
+    const schema = await extractDatabaseSchema(filePath, file.name);
+    
+    // Initialize SQLite database from the SQL file
+    await initializeDatabase(sessionToken, filePath);
+
     return NextResponse.json({ 
       message: 'File uploaded successfully',
       fileName: file.name,
       sessionToken,
-      filePath: `data/${sessionToken}/${file.name}`
+      filePath: `data/${sessionToken}/${file.name}`,
+      schema: schema.metadata
     });
 
   } catch (error) {
