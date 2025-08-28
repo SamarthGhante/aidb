@@ -1,8 +1,7 @@
 import { ChatGroq } from "@langchain/groq";
 import { ChatPromptTemplate, MessagesPlaceholder } from "@langchain/core/prompts";
 import { AgentExecutor, createToolCallingAgent } from "langchain/agents";
-import { DynamicStructuredTool } from "@langchain/core/tools";
-import { z } from "zod";
+import { DynamicTool } from "@langchain/core/tools";
 import { createSQLExecutor } from "./sql-executor";
 import { loadDatabaseSchema, DatabaseSchema } from "./schema-extractor";
 
@@ -15,7 +14,7 @@ export class DatabaseChatAgent {
     this.sessionToken = sessionToken;
     this.llm = new ChatGroq({
       apiKey: process.env.GROQ_API_KEY,
-      model: "llama-3.1-70b-versatile",
+      model: "llama-3.3-70b-versatile",
       temperature: 0.1,
     });
   }
@@ -28,63 +27,64 @@ export class DatabaseChatAgent {
   }
 
   private createSQLTool() {
-    return new DynamicStructuredTool({
+    return new DynamicTool({
       name: "execute_sql_query",
-      description: "Execute SQL queries on the database. Use this tool when the user asks questions that require querying the database.",
-      schema: z.object({
-        query: z.string().describe("The SQL query to execute"),
-        explanation: z.string().describe("Brief explanation of what this query does")
-      }),
-      func: async ({ query, explanation }) => {
+      description: "Execute SQL queries on the database. Input should be a valid SQL query string.",
+      func: async (input: string) => {
         try {
+          console.log("Executing SQL query:", input);
           const executor = createSQLExecutor(this.sessionToken);
-          const results = await executor.executeQuery(query);
+          const results = await executor.executeQuery(input);
           await executor.close();
 
-          return {
-            success: true,
-            results,
-            explanation,
-            rowCount: results.length
-          };
+          return `Query executed successfully!
+Results (${results.length} rows):
+${JSON.stringify(results, null, 2)}`;
         } catch (error) {
-          return {
-            success: false,
-            error: error instanceof Error ? error.message : "Unknown error",
-            explanation
-          };
+          console.error("SQL execution error:", error);
+          return `Error executing query: ${error instanceof Error ? error.message : "Unknown error"}`;
         }
-      }
+      },
     });
   }
 
   private createSchemaInfoTool() {
-    return new DynamicStructuredTool({
+    return new DynamicTool({
       name: "get_schema_info",
-      description: "Get information about database schema, tables, and columns. Use this when user asks about database structure.",
-      schema: z.object({
-        table: z.string().optional().describe("Specific table name to get info about, or leave empty for all tables")
-      }),
-      func: async ({ table }) => {
+      description: "Get information about database schema, tables, and columns. Input should be a table name or empty string for all tables.",
+      func: async (input: string) => {
+        console.log("Getting schema info for:", input);
         if (!this.schema) {
-          return { error: "Schema not loaded" };
+          return "Schema not loaded";
         }
 
+        const table = input.trim();
         if (table) {
-          const tableInfo = this.schema.tables.find(t => t.name.toLowerCase() === table.toLowerCase());
-          return tableInfo ? { table: tableInfo } : { error: `Table '${table}' not found` };
+          const tableInfo = this.schema.tables.find(
+            (t) => t.name.toLowerCase() === table.toLowerCase()
+          );
+          if (tableInfo) {
+            return `Table: ${tableInfo.name}
+Columns:
+${tableInfo.columns.map(col => `- ${col.name}: ${col.type}${col.primaryKey ? ' (PRIMARY KEY)' : ''}${!col.nullable ? ' (NOT NULL)' : ''}`).join('\n')}`;
+          } else {
+            return `Table '${table}' not found`;
+          }
         }
 
-        return {
-          tables: this.schema.tables.map(t => ({
-            name: t.name,
-            columns: t.columns.length,
-            columnNames: t.columns.map(c => c.name)
-          })),
-          totalTables: this.schema.metadata.totalTables,
-          relationships: this.schema.relationships
-        };
-      }
+        const tablesList = this.schema.tables.map(t => 
+          `- ${t.name} (${t.columns.length} columns: ${t.columns.map(c => c.name).join(', ')})`
+        ).join('\n');
+
+        return `Database Schema:
+Total Tables: ${this.schema.metadata.totalTables}
+
+Tables:
+${tablesList}
+
+Relationships:
+${this.schema.relationships.map(rel => `- ${rel.from.table}.${rel.from.column} -> ${rel.to.table}.${rel.to.column}`).join('\n')}`;
+      },
     });
   }
 
@@ -108,7 +108,7 @@ export class DatabaseChatAgent {
 
     const relationships = this.schema.relationships.length > 0 
       ? `\nRelationships:\n${this.schema.relationships.map(rel => 
-          `- ${rel.from.table}.${rel.from.column} → ${rel.to.table}.${rel.to.column} (${rel.type})`
+          `- ${rel.from.table}.${rel.from.column} -> ${rel.to.table}.${rel.to.column} (${rel.type})`
         ).join("\n")}`
       : "";
 
@@ -154,6 +154,7 @@ IMPORTANT: Only generate valid SQL queries that work with the provided schema. A
       tools,
       verbose: false,
       maxIterations: 3,
+      returnIntermediateSteps: false,
     });
 
     try {
@@ -162,7 +163,12 @@ IMPORTANT: Only generate valid SQL queries that work with the provided schema. A
         chat_history: chatHistory,
       });
 
-      return result.output;
+      // Ensure we return a string
+      if (typeof result.output === 'string') {
+        return result.output;
+      } else {
+        return JSON.stringify(result.output);
+      }
     } catch (error) {
       console.error("Chat agent error:", error);
       return "I'm sorry, I encountered an error while processing your request. Please try again or rephrase your question.";

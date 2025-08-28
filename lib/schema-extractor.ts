@@ -134,7 +134,7 @@ function extractIndexes(sqlContent: string, tableName: string): string[] {
   const indexes: string[] = [];
   
   // Match CREATE INDEX statements
-  const indexRegex = new RegExp(`CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?\\`?([a-zA-Z_][a-zA-Z0-9_]*)\\`?\\s+ON\\s+\\`?${tableName}\\`?`, 'gi');
+  const indexRegex = new RegExp(`CREATE\\s+(?:UNIQUE\\s+)?INDEX\\s+(?:IF\\s+NOT\\s+EXISTS\\s+)?\`?([a-zA-Z_][a-zA-Z0-9_]*)\`?\\s+ON\\s+\`?${tableName}\`?`, 'gi');
   
   let match;
   while ((match = indexRegex.exec(sqlContent)) !== null) {
