@@ -117,6 +117,8 @@ ${this.schema.relationships.map(rel => `- ${rel.from.table}.${rel.from.column} -
 DATABASE SCHEMA:
 ${schemaDescription}${relationships}
 
+AVAILABLE TABLES: ${this.schema.tables.map(t => t.name).join(', ')}
+
 INSTRUCTIONS:
 1. When users ask questions that require data from the database, use the execute_sql_query tool to run appropriate SQL queries.
 2. When users ask about database structure, tables, or columns, use the get_schema_info tool.
@@ -126,7 +128,11 @@ INSTRUCTIONS:
 6. If a query fails, explain the error and suggest corrections.
 7. Be helpful and provide context about the data you're showing.
 
-IMPORTANT: Only generate valid SQL queries that work with the provided schema. Always double-check table and column names.`;
+IMPORTANT: 
+- Only use table names that exist in the schema: ${this.schema.tables.map(t => t.name).join(', ')}
+- Always double-check table and column names against the provided schema
+- If a user asks about "user_details" or similar, they likely mean the "${this.schema.tables[0]?.name || 'users'}" table
+- Use the get_schema_info tool first if you're unsure about table structure`;
   }
 
   async chat(message: string, chatHistory: any[] = []): Promise<string> {

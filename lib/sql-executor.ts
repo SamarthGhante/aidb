@@ -78,6 +78,15 @@ export async function initializeDatabase(sessionToken: string, sqlFilePath: stri
   const executor = new SQLExecutor(sessionToken);
 
   try {
+    // Check if SQL contains CREATE TABLE statements
+    const hasCreateStatements = /CREATE\s+TABLE/i.test(sqlContent);
+    
+    if (!hasCreateStatements) {
+      // If no CREATE TABLE statements, infer table structure from INSERT statements
+      console.log('No CREATE TABLE statements found. Inferring structure from INSERT statements...');
+      await createTablesFromInserts(executor, sqlContent);
+    }
+
     // Split SQL content into individual statements
     const statements = sqlContent
       .split(';')
@@ -103,6 +112,88 @@ export async function initializeDatabase(sessionToken: string, sqlFilePath: stri
   } finally {
     await executor.close();
   }
+}
+
+async function createTablesFromInserts(executor: SQLExecutor, sqlContent: string): Promise<void> {
+  // Find all INSERT statements and extract table structures
+  const insertRegex = /INSERT\s+INTO\s+`?(\w+)`?\s*\(\s*`?([^)]+?)`?\s*\)\s+VALUES/gi;
+  const tablesCreated = new Set<string>();
+  
+  let match;
+  while ((match = insertRegex.exec(sqlContent)) !== null) {
+    const tableName = match[1];
+    const columnsStr = match[2];
+    
+    if (tablesCreated.has(tableName)) {
+      continue; // Table already created
+    }
+    
+    // Parse column names - handle backticks properly
+    const columns = columnsStr
+      .split('`,')
+      .map(col => col.trim().replace(/^`|`$/g, ''))
+      .filter(col => col.length > 0);
+    
+    // Get sample data to infer types
+    const sampleData = getSampleDataForTable(sqlContent, tableName);
+    
+    // Create table with inferred column types
+    const createTableSQL = generateCreateTableSQL(tableName, columns, sampleData);
+    
+    console.log(`Creating table: ${tableName}`);
+    console.log(`SQL: ${createTableSQL}`);
+    
+    try {
+      await executor.executeQuery(createTableSQL);
+      tablesCreated.add(tableName);
+    } catch (error) {
+      console.error(`Failed to create table ${tableName}:`, error);
+      throw error;
+    }
+  }
+}
+
+function getSampleDataForTable(sqlContent: string, tableName: string): string[] {
+  // Find the first VALUES clause for this table
+  const valuesRegex = new RegExp(`INSERT\\s+INTO\\s+\`?${tableName}\`?[^V]+VALUES\\s*\\n?([^;]+)`, 'i');
+  const match = sqlContent.match(valuesRegex);
+  
+  if (!match) return [];
+  
+  // Extract first row of data
+  const valuesSection = match[1];
+  const firstRowMatch = valuesSection.match(/\(([^)]+)\)/);
+  
+  if (!firstRowMatch) return [];
+  
+  // Parse the values
+  const values = firstRowMatch[1]
+    .split(',')
+    .map(val => val.trim().replace(/^['"`]|['"`]$/g, ''));
+  
+  return values;
+}
+
+function generateCreateTableSQL(tableName: string, columns: string[], sampleData: string[]): string {
+  const columnDefinitions = columns.map((col, index) => {
+    const sampleValue = sampleData[index] || '';
+    let type = 'TEXT'; // Default type
+    
+    // Infer type from sample data
+    if (col.toLowerCase().includes('id') && index === 0) {
+      type = 'INTEGER PRIMARY KEY';
+    } else if (col.toLowerCase().includes('id')) {
+      type = 'INTEGER';
+    } else if (!isNaN(Number(sampleValue)) && sampleValue !== '' && sampleValue !== 'null') {
+      type = sampleValue.includes('.') ? 'REAL' : 'INTEGER';
+    } else if (sampleValue === '0' || sampleValue === '1') {
+      type = 'INTEGER'; // Boolean-like
+    }
+    
+    return `\`${col}\` ${type}`;
+  });
+  
+  return `CREATE TABLE IF NOT EXISTS \`${tableName}\` (\n  ${columnDefinitions.join(',\n  ')}\n);`;
 }
 
 export function createSQLExecutor(sessionToken: string): SQLExecutor {

@@ -33,7 +33,18 @@ export interface DatabaseSchema {
 export async function extractDatabaseSchema(sqlFilePath: string, fileName: string): Promise<DatabaseSchema> {
   const sqlContent = await readFile(sqlFilePath, 'utf-8');
   
-  const tables = extractTables(sqlContent);
+  // Check if SQL contains CREATE TABLE statements
+  const hasCreateStatements = /CREATE\s+TABLE/i.test(sqlContent);
+  
+  let tables: TableSchema[];
+  if (hasCreateStatements) {
+    tables = extractTables(sqlContent);
+  } else {
+    // Extract table structure from INSERT statements
+    console.log('No CREATE TABLE statements found. Extracting schema from INSERT statements...');
+    tables = extractTablesFromInserts(sqlContent);
+  }
+  
   const relationships = extractRelationships(sqlContent, tables);
   
   const schema: DatabaseSchema = {
@@ -142,6 +153,88 @@ function extractIndexes(sqlContent: string, tableName: string): string[] {
   }
   
   return indexes;
+}
+
+function extractTablesFromInserts(sqlContent: string): TableSchema[] {
+  const tables: TableSchema[] = [];
+  const insertRegex = /INSERT\s+INTO\s+`?(\w+)`?\s*\(\s*`?([^)]+?)`?\s*\)\s+VALUES/gi;
+  const tablesProcessed = new Set<string>();
+  
+  let match;
+  while ((match = insertRegex.exec(sqlContent)) !== null) {
+    const tableName = match[1];
+    const columnsStr = match[2];
+    
+    if (tablesProcessed.has(tableName)) {
+      continue; // Table already processed
+    }
+    
+    // Parse column names - handle backticks properly
+    const columnNames = columnsStr
+      .split('`,')
+      .map(col => col.trim().replace(/^`|`$/g, ''))
+      .filter(col => col.length > 0);
+    
+    // Get sample data to infer types
+    const sampleData = getSampleDataForTable(sqlContent, tableName);
+    
+    // Create column definitions
+    const columns = columnNames.map((colName, index) => {
+      const sampleValue = sampleData[index] || '';
+      let type = 'TEXT'; // Default type
+      let primaryKey = false;
+      
+      // Infer type from sample data and column name
+      if (colName.toLowerCase().includes('id') && index === 0) {
+        type = 'INTEGER';
+        primaryKey = true;
+      } else if (colName.toLowerCase().includes('id')) {
+        type = 'INTEGER';
+      } else if (!isNaN(Number(sampleValue)) && sampleValue !== '' && sampleValue !== 'null') {
+        type = sampleValue.includes('.') ? 'REAL' : 'INTEGER';
+      } else if (sampleValue === '0' || sampleValue === '1') {
+        type = 'INTEGER'; // Boolean-like
+      }
+      
+      return {
+        name: colName,
+        type: type,
+        nullable: true, // Default to nullable for INSERT-derived schemas
+        primaryKey: primaryKey
+      };
+    });
+    
+    tables.push({
+      name: tableName,
+      columns: columns,
+      indexes: [] // No index information available from INSERT statements
+    });
+    
+    tablesProcessed.add(tableName);
+  }
+  
+  return tables;
+}
+
+function getSampleDataForTable(sqlContent: string, tableName: string): string[] {
+  // Find the first VALUES clause for this table
+  const valuesRegex = new RegExp(`INSERT\\s+INTO\\s+\`?${tableName}\`?[^V]+VALUES\\s*\\n?([^;]+)`, 'i');
+  const match = sqlContent.match(valuesRegex);
+  
+  if (!match) return [];
+  
+  // Extract first row of data
+  const valuesSection = match[1];
+  const firstRowMatch = valuesSection.match(/\(([^)]+)\)/);
+  
+  if (!firstRowMatch) return [];
+  
+  // Parse the values
+  const values = firstRowMatch[1]
+    .split(',')
+    .map(val => val.trim().replace(/^['"`]|['"`]$/g, ''));
+  
+  return values;
 }
 
 function extractRelationships(sqlContent: string, tables: TableSchema[]) {
