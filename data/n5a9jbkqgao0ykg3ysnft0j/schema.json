@@ -1,0 +1,58 @@
+{
+  "tables": [
+    {
+      "name": "user_details",
+      "columns": [
+        {
+          "name": "user_id",
+          "type": "int(11)",
+          "nullable": false,
+          "primaryKey": false
+        },
+        {
+          "name": "username",
+          "type": "varchar(255)",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "first_name",
+          "type": "varchar(50)",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "last_name",
+          "type": "varchar(50)",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "gender",
+          "type": "varchar(10)",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "password",
+          "type": "varchar(50)",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "status",
+          "type": "tinyint(10)",
+          "nullable": true,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    }
+  ],
+  "relationships": [],
+  "metadata": {
+    "extractedAt": "2025-08-31T16:57:16.902Z",
+    "fileName": "sample1.sql",
+    "totalTables": 1
+  }
+}

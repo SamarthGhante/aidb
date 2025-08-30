@@ -85,19 +85,37 @@ export async function initializeDatabase(sessionToken: string, sqlFilePath: stri
       // If no CREATE TABLE statements, infer table structure from INSERT statements
       console.log('No CREATE TABLE statements found. Inferring structure from INSERT statements...');
       await createTablesFromInserts(executor, sqlContent);
+    } else {
+      // Convert MySQL syntax to SQLite
+      console.log('Converting MySQL syntax to SQLite...');
     }
 
-    // Split SQL content into individual statements
+    // Split SQL content into individual statements and clean them
     const statements = sqlContent
       .split(';')
       .map(stmt => stmt.trim())
+      .filter(stmt => {
+        // Remove empty statements and pure comment blocks
+        if (stmt.length === 0) return false;
+        if (stmt.startsWith('--') && !stmt.includes('CREATE') && !stmt.includes('INSERT')) return false;
+        return true;
+      })
+      .map(stmt => {
+        // Remove comment lines from within statements
+        return stmt.split('\n')
+          .filter(line => !line.trim().startsWith('--') || line.includes('CREATE') || line.includes('INSERT'))
+          .join('\n')
+          .trim();
+      })
       .filter(stmt => stmt.length > 0);
 
     // Execute each statement
     for (const statement of statements) {
       if (statement.trim()) {
         try {
-          await executor.executeQuery(statement + ';');
+          // Convert MySQL to SQLite syntax
+          const sqliteStatement = convertMySQLToSQLite(statement);
+          await executor.executeQuery(sqliteStatement + ';');
         } catch (error) {
           console.warn(`Warning: Failed to execute statement: ${statement.substring(0, 100)}...`, error);
           // Continue with other statements even if one fails
@@ -194,6 +212,46 @@ function generateCreateTableSQL(tableName: string, columns: string[], sampleData
   });
   
   return `CREATE TABLE IF NOT EXISTS \`${tableName}\` (\n  ${columnDefinitions.join(',\n  ')}\n);`;
+}
+
+function convertMySQLToSQLite(statement: string): string {
+  let converted = statement;
+  
+  // Remove MySQL-specific syntax
+  converted = converted.replace(/ENGINE=\w+\s*/gi, '');
+  converted = converted.replace(/DEFAULT CHARSET=\w+\s*/gi, '');
+  converted = converted.replace(/AUTO_INCREMENT=\d+\s*/gi, '');
+  
+  // Convert MySQL data types to SQLite equivalents
+  converted = converted.replace(/int\(\d+\)/gi, 'INTEGER');
+  converted = converted.replace(/tinyint\(\d+\)/gi, 'INTEGER');
+  converted = converted.replace(/varchar\(\d+\)/gi, 'TEXT');
+  converted = converted.replace(/char\(\d+\)/gi, 'TEXT');
+  converted = converted.replace(/text/gi, 'TEXT');
+  converted = converted.replace(/datetime/gi, 'TEXT');
+  converted = converted.replace(/timestamp/gi, 'TEXT');
+  
+  // Handle AUTO_INCREMENT columns - make them PRIMARY KEY AUTOINCREMENT
+  converted = converted.replace(/(\`\w+\`)\s+INTEGER\s+NOT NULL\s+AUTO_INCREMENT/gi, '$1 INTEGER PRIMARY KEY AUTOINCREMENT');
+  
+  // Remove separate PRIMARY KEY constraints if we already have PRIMARY KEY AUTOINCREMENT
+  if (converted.includes('PRIMARY KEY AUTOINCREMENT')) {
+    converted = converted.replace(/,\s*PRIMARY KEY\s*\([^)]+\)/gi, '');
+  }
+  
+  // Convert remaining AUTO_INCREMENT
+  converted = converted.replace(/AUTO_INCREMENT/gi, 'AUTOINCREMENT');
+  
+  // Clean up extra whitespace and commas
+  converted = converted.replace(/,\s*\)/g, ')');
+  converted = converted.replace(/\s+/g, ' ');
+  converted = converted.trim();
+  
+  console.log('MySQL to SQLite conversion:');
+  console.log('Original:', statement.substring(0, 200) + '...');
+  console.log('Converted:', converted.substring(0, 200) + '...');
+  
+  return converted;
 }
 
 export function createSQLExecutor(sessionToken: string): SQLExecutor {
