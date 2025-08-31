@@ -31,9 +31,11 @@ export default function DashboardPage() {
 
         {/* Main Dashboard Content */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 h-[calc(100vh-200px)]">
-          <div className="lg:col-span-2 flex flex-col">
+          <div className="lg:col-span-2 flex flex-col min-h-0 max-h-full">
             {uploadedFile ? (
-              <ChatInterface sessionToken={sessionToken} fileName={uploadedFile} />
+              <div className="flex-1 min-h-0 max-h-full overflow-hidden">
+                <ChatInterface sessionToken={sessionToken} fileName={uploadedFile} />
+              </div>
             ) : (
               <div className="bg-black/50 border border-neutral-700 rounded-lg p-6 flex-1 flex items-center justify-center">
                 <div className="text-center">

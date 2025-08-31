@@ -1,0 +1,106 @@
+{
+  "tables": [
+    {
+      "name": "users",
+      "columns": [
+        {
+          "name": "id",
+          "type": "INTEGER",
+          "nullable": true,
+          "primaryKey": true
+        },
+        {
+          "name": "full_name",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "email_address",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "prn_number",
+          "type": "INTEGER",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "mobile_number",
+          "type": "INTEGER",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "department",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "year",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "blood_group",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "weight",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "college_name",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "blood_bank",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "token",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "registered",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "donated",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        },
+        {
+          "name": "not_eligible",
+          "type": "TEXT",
+          "nullable": true,
+          "primaryKey": false
+        }
+      ],
+      "indexes": []
+    }
+  ],
+  "relationships": [],
+  "metadata": {
+    "extractedAt": "2025-08-31T17:01:54.106Z",
+    "fileName": "nss-blood-donation-final-sql-format.sql",
+    "totalTables": 1
+  }
+}

@@ -115,15 +115,15 @@ export function ChatInterface({ sessionToken, fileName }: ChatInterfaceProps) {
   };
 
   return (
-    <div className="flex flex-col h-full bg-black/50 border border-neutral-700 rounded-lg overflow-hidden">
+    <div className="flex flex-col h-full max-h-full bg-black/50 border border-neutral-700 rounded-lg overflow-hidden">
       {/* Chat Header */}
-      <div className="p-4 border-b border-neutral-700 bg-black/30">
+      <div className="flex-shrink-0 p-4 border-b border-neutral-700 bg-black/30">
         <h2 className="text-xl font-bold text-white font-mono">Database Chat</h2>
         <p className="text-neutral-400 text-sm font-mono">Connected to: {fileName}</p>
       </div>
 
-      {/* Messages Container */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0">
+      {/* Messages Container - Fixed height with scroll */}
+      <div className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-4 min-h-0 max-h-full scrollbar-thin">
         <AnimatePresence>
           {messages.map((message) => (
             <motion.div
@@ -134,7 +134,7 @@ export function ChatInterface({ sessionToken, fileName }: ChatInterfaceProps) {
               className={`flex ${message.type === 'user' ? 'justify-end' : 'justify-start'}`}
             >
               <div
-                className={`max-w-[80%] p-3 rounded-lg font-mono text-sm ${
+                className={`max-w-[85%] p-3 rounded-lg font-mono text-sm break-words ${
                   message.type === 'user'
                     ? 'bg-white text-black'
                     : 'bg-neutral-800 text-white border border-neutral-700'
@@ -150,7 +150,7 @@ export function ChatInterface({ sessionToken, fileName }: ChatInterfaceProps) {
                     <span className="text-neutral-400">Analyzing your query...</span>
                   </div>
                 ) : (
-                  <div className="whitespace-pre-wrap">{message.content}</div>
+                  <div className="whitespace-pre-wrap break-words overflow-wrap-anywhere">{message.content}</div>
                 )}
                 <div className={`text-xs mt-2 ${
                   message.type === 'user' ? 'text-neutral-600' : 'text-neutral-500'
@@ -165,7 +165,7 @@ export function ChatInterface({ sessionToken, fileName }: ChatInterfaceProps) {
       </div>
 
       {/* Input Area */}
-      <div className="p-4 border-t border-neutral-700 bg-black/30">
+      <div className="flex-shrink-0 p-4 border-t border-neutral-700 bg-black/30">
         <div className="flex gap-3">
           <input
             ref={inputRef}
