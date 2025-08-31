@@ -99,6 +99,13 @@ export default function DashboardPage() {
             }}
           />
         )}
+
+        {/* Developer Credit */}
+        <div className="absolute bottom-4 right-4 z-20">
+          <p className="text-neutral-400 font-mono text-sm">
+            Dev: <span className="text-white font-medium">Samarth Ghante</span>
+          </p>
+        </div>
       </div>
     </BackgroundLines>
   );

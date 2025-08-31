@@ -46,6 +46,13 @@ export default function Home() {
           <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-500 ease-out"></div>
         </button>
       </div>
+
+      {/* Developer Credit */}
+      <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-20">
+        <p className="text-neutral-400 font-mono text-sm">
+          Dev: <span className="text-white font-medium">Samarth Ghante</span>
+        </p>
+      </div>
     </BackgroundLines>
   );
 }
