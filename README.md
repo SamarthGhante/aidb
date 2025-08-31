@@ -1,85 +1,47 @@
-# AIDB
+# AIDB: Chat w/ your database as if it is a Human!
 
-**AI-Powered Natural Language Database Interface | Transform Complex Queries into Simple Conversations**
+[![Demo Video](.assets/thumbnail.png)](https://drive.google.com/file/d/19e-If6fHqiMqN-SyrCZydS1Y2w1az4YD/view?usp=sharing)
 
-> Chat with your databases using natural language. Upload SQL files and interact with your data through intelligent conversations powered by AI.
+<p align="center">  
+🚀 Interact with your databases effortlessly using natural language. Upload your SQL files and let AI handle the complex queries through intelligent, conversational insights. No more SQL headaches! 🧠💡  
+</p>
 
-<video width="800" controls>
-  <source src=".assets/video.webm" type="video/webm">
-  Your browser does not support the video tag.
-</video>
+
 
 ## Features
 
-### AI-Powered Chat Interface
-- Natural language database queries
-- Intelligent SQL generation and execution
-- Context-aware responses with data insights
-- Powered by Groq API with Llama 3.3 70B model
-
-### Universal SQL File Support
-- **MySQL dumps** - Automatic syntax conversion to SQLite
-- **SQLite files** - Native support
-- **INSERT-only files** - Auto-generates table structure
-- **phpMyAdmin exports** - Full compatibility
-
-### Smart Database Processing
-- Automatic schema extraction and analysis
-- Real-time SQL query execution
-- Table relationship detection
-- Data type inference and conversion
-
-## Local Deployment
-
-### Prerequisites
-- Node.js 18+ 
-- npm or yarn
-- Groq API key
-
-### Installation
-
-1. **Clone the repository**
-   ```bash
-   git clone <repository-url>
-   cd aidb
-   ```
-
-2. **Install dependencies**
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Environment Setup**
-   ```bash
-   populate the .env file
-   ```
-   ```
-
-4. **Run the development server**
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-5. **Open your browser**
-   Navigate to [http://localhost:3000](http://localhost:3000)
+- 🚀 Get Insights from the database without writing a single line of code  
+- 🧠 Intelligent Relation and Schema Extraction
+- 🤖 Advanced flowchain that provides real-time actual context to the LLMs
+- ⚙️ Comprehensive support for MySQL dumps, SQLite files  
+- 🔍 Longer context memory 
 
 
-## Tech Stack
+## More Screenshots  
+![Product_Screenshot_1](.assets/1.png)  
+![Product_Screenshot_2](.assets/2.png)  
+![Product_Screenshot_3](.assets/3.png)  
+![Product_Screenshot_4](.assets/4.png)  
+![Product_Screenshot_5](.assets/5.png)  
 
-- **Frontend**: Next.js 15, React 19, TypeScript
-- **Styling**: Tailwind CSS v4, Framer Motion
-- **AI**: LangChain, Groq API (Llama 3.3 70B)
-- **Database**: SQLite3
+
+## Setup Guide
+
+**Prerequisites:** Node.js 18+, npm/yarn, Groq API key  
+
+**Installation & Run:**
+
+```
+git clone <repository-url>
+cd aidb
+npm install    # or yarn install
+# Setup .env file with API keys
+npm run dev    # or yarn dev
+```
+
+Open [http://localhost:3000](http://localhost:3000) in your browser to use AIDB.
 
 
-## License
+## License & Credits
 
-This project is open source and available under the [MIT License](LICENSE).
-
----
-
-**Dev: Samarth Ghante**
+This project is open source under the [MIT License](LICENSE).  
