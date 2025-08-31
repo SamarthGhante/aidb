@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AIDB
 
-## Getting Started
+**AI-Powered Natural Language Database Interface | Transform Complex Queries into Simple Conversations**
 
-First, run the development server:
+> Chat with your databases using natural language. Upload SQL files and interact with your data through intelligent conversations powered by AI.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+<video width="800" controls>
+  <source src=".assets/video.webm" type="video/webm">
+  Your browser does not support the video tag.
+</video>
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Features
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### AI-Powered Chat Interface
+- Natural language database queries
+- Intelligent SQL generation and execution
+- Context-aware responses with data insights
+- Powered by Groq API with Llama 3.3 70B model
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Universal SQL File Support
+- **MySQL dumps** - Automatic syntax conversion to SQLite
+- **SQLite files** - Native support
+- **INSERT-only files** - Auto-generates table structure
+- **phpMyAdmin exports** - Full compatibility
 
-## Learn More
+### Smart Database Processing
+- Automatic schema extraction and analysis
+- Real-time SQL query execution
+- Table relationship detection
+- Data type inference and conversion
 
-To learn more about Next.js, take a look at the following resources:
+## Local Deployment
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Groq API key
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Installation
 
-## Deploy on Vercel
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd aidb
+   ```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   ```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+3. **Environment Setup**
+   ```bash
+   populate the .env file
+   ```
+   ```
+
+4. **Run the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   ```
+
+5. **Open your browser**
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+
+## Tech Stack
+
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS v4, Framer Motion
+- **AI**: LangChain, Groq API (Llama 3.3 70B)
+- **Database**: SQLite3
+
+
+## License
+
+This project is open source and available under the [MIT License](LICENSE).
+
+---
+
+**Dev: Samarth Ghante**
