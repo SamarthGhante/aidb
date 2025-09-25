@@ -1,4 +1,4 @@
-# AIDB: Chat w/ your database as if it is a Human!
+# AIDB: Talk with your database, no need to write complex SQL queries!
 
 [![Demo Video](.assets/thumbnail.png)](https://drive.google.com/file/d/19e-If6fHqiMqN-SyrCZydS1Y2w1az4YD/view?usp=sharing)
 
